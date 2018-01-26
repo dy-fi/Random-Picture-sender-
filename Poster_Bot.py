@@ -10,17 +10,24 @@ bot = Bot("&")
 logging.basicConfig(level=logging.INFO)
 dash = "|------------------------------------------------|"
 
+
+file = input("Enter the folder you want to use: ")
+frequency = int(input("How many times a week should the bot post (1-10): "))
+if frequency not in range(0, 10):
+    frequency = input("That is not a valid input, please enter a number (1-10): ")
+
 #client events
 @client.event
 async def on_ready():
+
     namelen = len(str(client.user.name))
 
     if namelen >= 14:
         spaces = 0
     else:
-        spaces = 14-namelen
+        spaces = namelen - 14
 
-    print("| ",client.user.name,"functional |",' '*spaces)
+    print("| ",client.user.name,": Live     |",' '*spaces)
     print("|  ID: ",client.user.id,"  |")
     print("|____________________________|")
 
@@ -36,41 +43,38 @@ async def background_loop():
     print("| Coroutine active |")
     print(dash)
     while not client.is_closed:
-        when = random.randrange(0, 24 * 3600 * 7)
-        when2 = random.randrange(0, 604800-when)
+        times = sorted([random.randrange(1,604801,1) for _ in range(10)])
 
         '''
-        Math to get exact time, because sleep only accepts arguments in seconds so
-        hour, minute, and second is used to set a timedelta object, which is added 
-        to the current day.  A small console feature
+        Math to get exact time, because sleep only accepts arguments in 
+        seconds so the day, hour, minute, and second that that range 
+        represents is used to set a timedelta object, which is added to 
+        the current day.  Run through a loop for frequency
         '''
 
-        d = 86400
-        h = 3600
-        ms = 60
-        day = when/d
-        day2 = (when2+when)/d
-        hour = ((when%d)/h)
-        hour2 = (((when2+when)%d)/h)
-        minute = (((when%d)%h)/ms)
-        minute2 = ((((when2+when)%d)%h)/ms)
-        second = ((((when%d)%h)%ms)/ms)
-        second2 = (((((when2+when)%d)%h)%ms)/ms)
-        td = datetime.datetime.today()
-        timewhen = datetime.timedelta(days=day,hours=hour,minutes=minute,seconds=second)
-        timewhen2 = datetime.timedelta(days=day2,hours=hour2,minutes=minute2,seconds=second2)
+        def time_format(when):
+            d = 86400
+            h = 3600
+            ms = 60
+            day = when/d
+            hour = ((when%d)/h)
+            minute = (((when%d)%h)/ms)
+            second = ((((when%d)%h)%ms)/ms)
+            td = datetime.datetime.today()
+            timewhen = datetime.timedelta(days=day, hours=hour, minutes=minute, seconds=second)
+            return td + timewhen
 
-        print("|  First image: ", td + timewhen, "     |")
-        print("| Second image: ", td + timewhen2, "     |")
-        print(dash)
-        channel = client.get_all_channels()
+        # coroutine execution
+        for x in range(0, frequency):
+            print("| Image ",x+1,": ",time_format(times[x]),"        |")
+            print(dash)
 
-        #coroutine execution
-        await asyncio.sleep(when)
-        client.send_message(channel, random.choice("os.listdir(PATH"))
-        await asyncio.sleep(when2)
-        client.send_message(channel, random.choice("os.listdir(PATH"))
+        while time_format(times[x]) > datetime.datetime.today():
+            await asyncio.sleep(1)
+            client.send_message(channel, random.choice("os.listdir({}".format(file)))
 
 
+
+channel = client.get_all_channels()
 client.loop.create_task(background_loop())
-client.run('CLIENT HERE')
+client.run(TOKEN)
