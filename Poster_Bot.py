@@ -1,5 +1,6 @@
 import logging
 import discord
+from discord.ext import commands
 from discord.ext.commands import Bot
 import asyncio
 import random
@@ -7,24 +8,30 @@ import datetime
 import os
 
 client = discord.Client()
-bot = Bot("&")
+bot = commands.Bot(command_prefix="?")
 logging.basicConfig(level=logging.INFO)
-
 dash = "|------------------------------------------------|"
+channelcache = [client.get_all_channels()]
+
+with open('Commands list.txt', 'r') as myfile:
+    commandslist=myfile.read()
 
 
 file = input("Enter the folder you want to use: ")
 if not os.path.exists(file):
     file = input("Not a valid path.  Try again: ")
 
+
 frequency = int(input("How many times a week should the bot post (1-10): "))
 if frequency not in range(0, 10):
     frequency = input("That is not a valid input, please enter a number (1-10): ")
 
+
+
 #client events
 @client.event
 async def on_ready():
-    
+
     namelen = len(str(client.user.name))
 
     if namelen >= 14:
@@ -40,6 +47,18 @@ async def on_ready():
 async def on_message(message):
     if message.content == "TRIGGER MESSAGE":
         await client.send_message(message.channel, "BOT RESPONSE")
+
+
+#commands
+@bot.command()
+async def commandlist(ctx):
+    await ctx.send(commandslist)
+
+@bot.command()
+async def channel(ctx, arg):
+    channelcache.append(arg)
+    await ctx.send(channel, "Channel scope updated")
+
 
 #randomizer, time output formatting
 async def background_loop():
@@ -79,7 +98,6 @@ async def background_loop():
             client.send_message(channel, random.choice(os.listdir("{}".format(file))))
 
 
-
-channel = client.get_all_channels()
+channel = channelcache[len(channelcache)-1]
 client.loop.create_task(background_loop())
 client.run(TOKEN)
