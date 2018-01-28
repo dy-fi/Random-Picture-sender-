@@ -4,14 +4,19 @@ from discord.ext.commands import Bot
 import asyncio
 import random
 import datetime
+import os
 
 client = discord.Client()
 bot = Bot("&")
 logging.basicConfig(level=logging.INFO)
+
 dash = "|------------------------------------------------|"
 
 
 file = input("Enter the folder you want to use: ")
+if not os.path.exists(file):
+    file = input("Not a valid path.  Try again: ")
+
 frequency = int(input("How many times a week should the bot post (1-10): "))
 if frequency not in range(0, 10):
     frequency = input("That is not a valid input, please enter a number (1-10): ")
@@ -19,7 +24,7 @@ if frequency not in range(0, 10):
 #client events
 @client.event
 async def on_ready():
-
+    
     namelen = len(str(client.user.name))
 
     if namelen >= 14:
@@ -42,7 +47,7 @@ async def background_loop():
     print("____________________")
     print("| Coroutine active |")
     print(dash)
-    while not client.is_closed:
+    while True:
         times = sorted([random.randrange(1,604801,1) for _ in range(10)])
 
         '''
@@ -66,12 +71,12 @@ async def background_loop():
 
         # coroutine execution
         for x in range(0, frequency):
-            print("| Image ",x+1,": ",time_format(times[x]),"        |")
+            print("| Image ", x+1, ": ", time_format(times[x]), "        |")
             print(dash)
 
         while time_format(times[x]) > datetime.datetime.today():
             await asyncio.sleep(1)
-            client.send_message(channel, random.choice("os.listdir({}".format(file)))
+            client.send_message(channel, random.choice(os.listdir("{}".format(file))))
 
 
 
